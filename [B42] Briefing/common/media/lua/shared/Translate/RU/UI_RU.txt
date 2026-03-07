@@ -1,0 +1,30 @@
+UI_RU = {
+    UI_Time_AM = "ДП",
+    UI_Time_PM = "ПП",
+
+    UI_Briefing_Day = "%s-й день",
+    UI_Briefing_Days = "%s-й день",
+    UI_Briefing_DaysAfterOutbreak = "%s-й день после вспышки",
+
+    UI_Briefing_Location_Riverside = "Риверсайд",
+    UI_Briefing_Location_Rosewood = "Роузвуд",
+    UI_Briefing_Location_Muldraugh = "Малдро",
+    UI_Briefing_Location_Echocreek = "Эхо-Крик",
+    UI_Briefing_Location_Westpoint = "Вест-Пойнт",
+    UI_Briefing_Location_Dixie = "Дикси",
+    UI_Briefing_Location_DoeValley = "Доу-Вэлли",
+    UI_Briefing_Location_FallasLake = "Фаллас Лейк",
+    UI_Briefing_Location_Louisville = "Луисвилл",
+    UI_Briefing_Location_Marchridge = "Марч-Ридж",
+    UI_Briefing_Location_MarchridgeBunker = "Бункер (Марч-Ридж)",
+    UI_Briefing_Location_RiversideTrailerPark = "Риверсайдский трейлерный парк",
+    UI_Briefing_Location_KentuckyStatePrison = "Тюрьма штата Кентукки",
+    UI_Briefing_Location_ValleyStation = "Вэлли-Стейшн",
+    UI_Briefing_Location_Ekron = "Экрон",
+    UI_Briefing_Location_ScenicGroveMobileHomePark = "Трейлерный парк Синик-Гроув",
+    UI_Briefing_Location_Brandenburg = "Бранденбург",
+    UI_Briefing_Location_Irvington = "Ирвингтон",
+
+    UI_Briefing_KnoxCountry = "Округ Нокс",
+    UI_Briefing_Kentucky = "Кентукки, США",
+}

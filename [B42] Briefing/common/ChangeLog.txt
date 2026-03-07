@@ -1,0 +1,53 @@
+[ ALERT_CONFIG ]
+link1 = Workshop = https://steamcommunity.com/id/acrynos/myworkshopfiles/?appid=108600,
+[ ------ ]
+
+[ 1.0.1 ]
+- Added a typewriter effect for text.
+- Adjusted the logic for calculating the outbreak's start day.
+[ ------ ]
+
+[ 1.0.2 ]
+- Fixed incorrect calculation when the TimeSinceApo sandbox option is modified.
+[ ------ ]
+
+[ 1.0.3 ]
+- Here are some more fixes...
+[ ------ ]
+
+[ 1.0.4 ]
+- Fixed variable naming typo.
+- Fixed music volume state assignment.
+[ ------ ]
+
+[ 1.0.5 ]
+- Added "PauseStart" & "Pause on Start" mod compatibility.
+[ ------ ]
+
+[ 1.1.0 ]
+- Added option to change date and time format.
+- Added option to display days survived instead of counting from outbreak date.
+- Added ability to skip screen using ESC, spacebar, or mouse clicks.
+- Added debug mode detection with corresponding option.
+[ ------ ]
+
+[ 1.1.1 ]
+- Fixed incorrect settings initialization.
+[ ------ ]
+
+[ 1.1.2 ]
+- The mod settings has been updated.
+- Mod Load Order Sorter is now required.
+- Minor fixes and improvements.
+[ ------ ]
+
+[ 2.0.0 ]
+- Added typewriter sound.
+- Added compatibility with 42.14 & [CLASSIFIED].
+- Added multiplayer support (yep, don't be surprised).
+- Mod logic has been completely rewritten and the project structure has been improved.
+- "Knox County" has been replaced with "Knox Country" to match the official terminology.
+- Added a "Pause game after briefing" option.
+- Improved current location detection logic.
+- Various fixes and improvements.
+[ ------ ]
