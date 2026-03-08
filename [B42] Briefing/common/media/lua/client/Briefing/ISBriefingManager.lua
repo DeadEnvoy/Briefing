@@ -8,14 +8,14 @@ ISBriefingManager = {};
 function ISBriefingManager:getLocationName(x, y)
     local gameMode = SAPI and SAPI.Scenarios:getCurrent() or "Zomboid"
     local locations = require "Briefing/ISBriefingLocations"
-    for i = 1, #locations do
+    for i = #locations, 1, -1 do
         local location = locations[i]
         if (location.mode == gameMode) and (x >= location.startX and x <= location.endX) and (y >= location.startY and y <= location.endY) then
             return getText("UI_Briefing_Location_" .. location.id) .. ", " .. getText("UI_Briefing_KnoxCountry");
         end
     end
     if SAPI and SAPI.Scenarios:getCurrent() ~= "Zomboid" then
-        for i = 1, #locations do
+        for i = #locations, 1, -1 do
             local location = locations[i]
             if (location.mode == "Zomboid") and (x >= location.startX and x <= location.endX) and (y >= location.startY and y <= location.endY) then
                 return getText("UI_Briefing_Location_" .. location.id) .. ", " .. getText("UI_Briefing_KnoxCountry");
