@@ -43,6 +43,7 @@ link1 = Workshop = https://steamcommunity.com/id/acrynos/myworkshopfiles/?appid=
 
 [ 2.0.0 ]
 - Added typewriter sound.
+- Added controller support.
 - Added compatibility with 42.14 & [CLASSIFIED].
 - Added multiplayer support (yep, don't be surprised).
 - Mod logic has been completely rewritten and the project structure has been improved.

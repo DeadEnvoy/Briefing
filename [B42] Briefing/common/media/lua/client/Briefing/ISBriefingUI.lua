@@ -1,8 +1,31 @@
 if isServer() then return; end
 
 require "ISUI/ISPanel";
+require "JoyPad/JoyPadSetup";
+require "ISUI/ISBackButtonWheel";
+require "Briefing/ISBriefingAPI";
 
 ISBriefingUI = ISPanel:derive("ISBriefingUI");
+
+local _originalJoypadDisconnectedUI_new = ISJoypadDisconnectedUI.new;
+ISJoypadDisconnectedUI.new = function(self, playerNum)
+    if BriefingAPI.isActive() then
+        return {
+            setAlwaysOnTop = function() end,
+            addToUIManager = function() end,
+            removeFromUIManager = function() end
+        };
+    end
+    return _originalJoypadDisconnectedUI_new(self, playerNum);
+end
+
+local _originalOnPressButtonNoFocus = JoypadControllerData.onPressButtonNoFocus;
+JoypadControllerData.onPressButtonNoFocus = function(self, button)
+    if BriefingAPI.isActive() then
+        return;
+    end
+    _originalOnPressButtonNoFocus(self, button);
+end
 
 local function utf8_len(s)
     local len = 0;
@@ -69,6 +92,20 @@ function ISBriefingUI:initialise()
 
     GameKeyboard.setDoLuaKeyPressed(false);
     GameKeyboard.noEventsWhileLoading = true;
+
+    JoypadState.disableControllerPrompt = true;
+    JoypadState.disableMovement = true;
+
+    ISBackButtonWheel.disablePlayerInfo = true;
+    ISBackButtonWheel.disableCrafting = true;
+    ISBackButtonWheel.disableTime = true;
+    ISBackButtonWheel.disableMoveable = true;
+
+    local joypadData = JoypadState.players[self.player:getPlayerNum() + 1];
+    if joypadData and joypadData.isActive then
+        self.joypadData = joypadData;
+        setJoypadFocus(self.player:getPlayerNum(), self);
+    end
 
     local bodyDamage = self.player:getBodyDamage();
     local count = bodyDamage:getBodyParts():size();
@@ -265,7 +302,7 @@ end
 
 function ISBriefingUI:onMouseDown(x, y)
     if not self.isFinished then
-        if not self.noPause then
+        if not self.joypadData and not self.noPause then
             self:skipAnimation();
         end
         return true;
@@ -275,7 +312,7 @@ end
 
 function ISBriefingUI:onRightMouseDown(x, y)
     if not self.isFinished then
-        if not self.noPause then
+        if not self.joypadData and not self.noPause then
             self:skipAnimation();
         end
         return true;
@@ -286,7 +323,7 @@ end
 function ISBriefingUI:onKeyPress(key)
     if not self.isFinished then
         GameKeyboard.eatKeyPress(key);
-        if not self.noPause and key == Keyboard.KEY_ESCAPE then
+        if (not self.joypadData and not self.noPause) and key == Keyboard.KEY_ESCAPE then
             self:skipAnimation();
         end
         return true;
@@ -295,8 +332,10 @@ function ISBriefingUI:onKeyPress(key)
 end
 
 function ISBriefingUI:onJoypadDown(button, joypadData)
+    local elapsed = (getTimestampMs() - self.startTime) / 1000.0;
+    if elapsed < 1.75 then return true; end
     if not self.isFinished then
-        if not self.noPause then
+        if not self.noPause and button == Joypad.AButton then
             self:skipAnimation();
         end
         return true;
@@ -352,6 +391,18 @@ function ISBriefingUI:restoreGame()
     GameKeyboard.setDoLuaKeyPressed(true);
     GameKeyboard.noEventsWhileLoading = false;
 
+    JoypadState.disableControllerPrompt = false;
+    JoypadState.disableMovement = false;
+
+    ISBackButtonWheel.disablePlayerInfo = false;
+    ISBackButtonWheel.disableCrafting = false;
+    ISBackButtonWheel.disableTime = false;
+    ISBackButtonWheel.disableMoveable = false;
+
+    if self.joypadData then
+        setJoypadFocus(self.player:getPlayerNum(), nil);
+    end
+
     if isClient() then
         self.player:setInvisible(false);
         self.player:setGhostMode(false, true);
@@ -383,6 +434,14 @@ function ISBriefingUI:restoreGame()
         end
 
         setZombiesUseless(false);
+    end
+
+    if self.joypadData and not self.joypadData.controller.connected then
+        local ui = _originalJoypadDisconnectedUI(ISJoypadDisconnectedUI, self.player:getPlayerNum());
+        ---@diagnostic disable-next-line: redundant-parameter
+        ui:setAlwaysOnTop(true);
+        ui:addToUIManager();
+        self.joypadData.disconnectedUI = ui;
     end
 
     triggerEvent("OnBriefingEnd");
@@ -509,10 +568,11 @@ function ISBriefingUI:new(lines, noPause)
     o.showCursor = true;
     o.sentStartCommand = false;
     o.skipRequested = false;
+    o.joypadData = nil;
 
     o.font = UIFont.Large;
     o.fontHgt = getTextManager():getFontHeight(o.font);
-    
+
     local total = 0;
     for _, line in ipairs(o.lines) do
         total = total + utf8_len(line);
