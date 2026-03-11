@@ -129,7 +129,7 @@ end
 function ISBriefingManager.onGameStart()
     if getCore():getGameMode() == "Tutorial" or getCore():isChallenge() then return end
     
-    if not getActivatedMods():contains("\\Briefing") and (SAPI and SAPI.Scenarios:getCurrent() == "Zomboid") then return end
+    if not getActivatedMods():contains("Briefing") and (SAPI and SAPI.Scenarios:getCurrent() == "Zomboid") then return end
 
     if SAPI and SAPI.Scenarios:getCurrent() ~= "Zomboid" then
         if not SAPI.Scenarios:getOptionValue("Briefing.Show") and not (SAPI.isNewGame() and SAPI.Scenarios:getOptionValue("Climate.SnowAtStart")) then
