@@ -52,3 +52,7 @@ link1 = Workshop = https://steamcommunity.com/id/acrynos/myworkshopfiles/?appid=
 - Improved current location detection logic.
 - Various fixes and improvements.
 [ ------ ]
+
+[ 2.0.1 ]
+- All localization files migrated to the new format.
+[ ------ ]

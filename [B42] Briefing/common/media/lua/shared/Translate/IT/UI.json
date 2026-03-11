@@ -1,0 +1,31 @@
+{
+    "UI_Time_AM": "AM",
+    "UI_Time_PM": "PM",
+
+    "UI_Briefing_Day": "%s giorno",
+    "UI_Briefing_Days": "%s giorni",
+    "UI_Briefing_DaysAfterOutbreak": "%s giorni dopo l'epidemia",
+
+    "UI_Briefing_Location_Riverside": "Riverside",
+    "UI_Briefing_Location_Rosewood": "Rosewood",
+    "UI_Briefing_Location_Muldraugh": "Muldraugh",
+    "UI_Briefing_Location_Echocreek": "Echo Creek",
+    "UI_Briefing_Location_Westpoint": "West Point",
+    "UI_Briefing_Location_Dixie": "Dixie",
+    "UI_Briefing_Location_DoeValley": "Doe Valley",
+    "UI_Briefing_Location_FallasLake": "Fallas Lake",
+    "UI_Briefing_Location_Louisville": "Louisville",
+    "UI_Briefing_Location_Marchridge": "March Ridge",
+    "UI_Briefing_Location_MarchridgeBunker": "Bunker (March Ridge)",
+    "UI_Briefing_Location_RiversideTrailerPark": "Parco case mobili di Riverside",
+    "UI_Briefing_Location_KentuckyStatePrison": "Prigione di Stato del Kentucky",
+    "UI_Briefing_Location_ValleyStation": "Valley Station",
+    "UI_Briefing_Location_Ekron": "Ekron",
+    "UI_Briefing_Location_ScenicGroveMobileHomePark": "Parco case mobili Scenic Grove",
+    "UI_Briefing_Location_Brandenburg": "Brandenburg",
+    "UI_Briefing_Location_Irvington": "Irvington",
+
+    "UI_Briefing_KnoxCountry": "Contea di Knox",
+    "UI_Briefing_Kentucky": "Kentucky, USA"
+
+}

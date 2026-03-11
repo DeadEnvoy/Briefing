@@ -1,0 +1,31 @@
+{
+    "UI_Time_AM": "AM",
+    "UI_Time_PM": "PM",
+
+    "UI_Briefing_Day": "%s nap",
+    "UI_Briefing_Days": "%s nap",
+    "UI_Briefing_DaysAfterOutbreak": "%s nappal a kitörés után",
+
+    "UI_Briefing_Location_Riverside": "Riverside",
+    "UI_Briefing_Location_Rosewood": "Rosewood",
+    "UI_Briefing_Location_Muldraugh": "Muldraugh",
+    "UI_Briefing_Location_Echocreek": "Echo Creek",
+    "UI_Briefing_Location_Westpoint": "West Point",
+    "UI_Briefing_Location_Dixie": "Dixie",
+    "UI_Briefing_Location_DoeValley": "Doe Valley",
+    "UI_Briefing_Location_FallasLake": "Fallas Lake",
+    "UI_Briefing_Location_Louisville": "Louisville",
+    "UI_Briefing_Location_Marchridge": "March Ridge",
+    "UI_Briefing_Location_MarchridgeBunker": "Bunker (March Ridge)",
+    "UI_Briefing_Location_RiversideTrailerPark": "Riverside lakókocsipark",
+    "UI_Briefing_Location_KentuckyStatePrison": "Kentucky állami börtön",
+    "UI_Briefing_Location_ValleyStation": "Valley Station",
+    "UI_Briefing_Location_Ekron": "Ekron",
+    "UI_Briefing_Location_ScenicGroveMobileHomePark": "Scenic Grove lakókocsipark",
+    "UI_Briefing_Location_Brandenburg": "Brandenburg",
+    "UI_Briefing_Location_Irvington": "Irvington",
+
+    "UI_Briefing_KnoxCountry": "Knox megye",
+    "UI_Briefing_Kentucky": "Kentucky, USA"
+
+}

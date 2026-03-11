@@ -1,0 +1,31 @@
+{
+    "UI_Time_AM": "오전",
+    "UI_Time_PM": "오후",
+
+    "UI_Briefing_Day": "%s일",
+    "UI_Briefing_Days": "%s일",
+    "UI_Briefing_DaysAfterOutbreak": "사태 발생 후 %s일",
+
+    "UI_Briefing_Location_Riverside": "리버사이드",
+    "UI_Briefing_Location_Rosewood": "로즈우드",
+    "UI_Briefing_Location_Muldraugh": "멀드로",
+    "UI_Briefing_Location_Echocreek": "에코 크릭",
+    "UI_Briefing_Location_Westpoint": "웨스트 포인트",
+    "UI_Briefing_Location_Dixie": "딕시",
+    "UI_Briefing_Location_DoeValley": "도우 밸리",
+    "UI_Briefing_Location_FallasLake": "팔라스 레이크",
+    "UI_Briefing_Location_Louisville": "루이빌",
+    "UI_Briefing_Location_Marchridge": "마치 리지",
+    "UI_Briefing_Location_MarchridgeBunker": "벙커 (마치 리지)",
+    "UI_Briefing_Location_RiversideTrailerPark": "리버사이드 트레일러 파크",
+    "UI_Briefing_Location_KentuckyStatePrison": "켄터키 주립 교도소",
+    "UI_Briefing_Location_ValleyStation": "밸리 스테이션",
+    "UI_Briefing_Location_Ekron": "에크론",
+    "UI_Briefing_Location_ScenicGroveMobileHomePark": "시닉 그로브 트레일러 파크",
+    "UI_Briefing_Location_Brandenburg": "브란덴부르크",
+    "UI_Briefing_Location_Irvington": "어빙턴",
+
+    "UI_Briefing_KnoxCountry": "녹스 카운티",
+    "UI_Briefing_Kentucky": "켄터키 주"
+
+}

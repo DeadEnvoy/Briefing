@@ -1,0 +1,31 @@
+{
+    "UI_Time_AM": "上午",
+    "UI_Time_PM": "下午",
+
+    "UI_Briefing_Day": "%s 天",
+    "UI_Briefing_Days": "%s 天",
+    "UI_Briefing_DaysAfterOutbreak": "疫情爆發後 %s 天",
+
+    "UI_Briefing_Location_Riverside": "河畔鎮",
+    "UI_Briefing_Location_Rosewood": "瑰木鎮",
+    "UI_Briefing_Location_Muldraugh": "莫德勞鎮",
+    "UI_Briefing_Location_Echocreek": "迴聲溪",
+    "UI_Briefing_Location_Westpoint": "西點鎮",
+    "UI_Briefing_Location_Dixie": "迪克西",
+    "UI_Briefing_Location_DoeValley": "杜谷",
+    "UI_Briefing_Location_FallasLake": "法拉斯湖",
+    "UI_Briefing_Location_Louisville": "路易維爾市",
+    "UI_Briefing_Location_Marchridge": "行軍嶺",
+    "UI_Briefing_Location_MarchridgeBunker": "地堡 (行軍嶺)",
+    "UI_Briefing_Location_RiversideTrailerPark": "河畔鎮房車公園",
+    "UI_Briefing_Location_KentuckyStatePrison": "肯塔基州立監獄",
+    "UI_Briefing_Location_ValleyStation": "溪谷站",
+    "UI_Briefing_Location_Ekron": "埃克隆",
+    "UI_Briefing_Location_ScenicGroveMobileHomePark": "西尼克格羅夫房車公園",
+    "UI_Briefing_Location_Brandenburg": "布蘭登堡",
+    "UI_Briefing_Location_Irvington": "歐文頓",
+
+    "UI_Briefing_KnoxCountry": "諾克斯縣",
+    "UI_Briefing_Kentucky": "肯塔基州"
+
+}
