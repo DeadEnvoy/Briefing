@@ -55,4 +55,6 @@ link1 = Workshop = https://steamcommunity.com/id/acrynos/myworkshopfiles/?appid=
 
 [ 2.0.1 ]
 - All localization files migrated to the new format.
+
+Note: The "%s" display issue and string formatting problem are not something I can fix on my end — this needs to be addressed by the TIS developers.
 [ ------ ]
