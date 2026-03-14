@@ -70,7 +70,14 @@ end
 local function setZombiesUseless(value)
     local zombieList = getCell():getZombieList();
     for i = 0, zombieList:size() - 1 do
-        zombieList:get(i):setUseless(value);
+        local zombie = zombieList:get(i);
+        if zombie and zombie:isAlive() then
+            if value then
+                zombie:setTarget(nil);
+            end
+            zombie:setCanWalk(value);
+            zombie:setUseless(value);
+        end
     end
 end
 
@@ -83,6 +90,10 @@ end
 
 function ISBriefingUI:initialise()
     ISPanel.initialise(self);
+
+    if ISMoodlesInLuaHandle then
+        ISMoodlesInLuaHandle:setVisible(false);
+    end
 
     self.isVolumeFadingOut = true;
     self.volumeFadeStartTime = getTimestampMs();
@@ -146,11 +157,69 @@ function ISBriefingUI:initialise()
             ISChat.instance:setVisible(false);
         end
     else
+        setZombiesUseless(true);
         setVehicleStatic(true);
+    end
+    
+    Events.OnTick.Add(ISBriefingUI.onTick);
+end
+
+function ISBriefingUI.onTick()
+    local self = ISBriefingUI.instance;
+    if not self or self.isFinished then return; end
+    
+    if self.player:isOnFire() then
+        self.player:StopBurning();
+    end
+
+    if not isClient() then
+        local bodyDamage = self.player:getBodyDamage();
+        bodyDamage:setHealthReductionFromSevereBadMoodles(0);
+        bodyDamage:setStandardHealthAddition(0);
+
+        local dirty = false;
+
+        for i = 0, bodyDamage:getBodyParts():size() - 1 do
+            local bodyPart = bodyDamage:getBodyPart(BodyPartType.FromIndex(i));
+            local partData = self.snapshotParts[i + 1];
+            if partData then
+                if bodyPart:getHealth() < partData.health then
+                    bodyPart:SetHealth(partData.health);
+                    dirty = true;
+                end
+                if bodyPart:getBurnTime() > partData.burnTime then
+                    bodyPart:setBurnTime(partData.burnTime);
+                    dirty = true;
+                end
+                if bodyPart:getBleedingTime() > partData.bleedingTime then
+                    bodyPart:setBleedingTime(partData.bleedingTime);
+                    dirty = true;
+                end
+                if bodyPart:getDeepWoundTime() > partData.deepWoundTime then
+                    bodyPart:setDeepWoundTime(partData.deepWoundTime);
+                    dirty = true;
+                end
+                if bodyPart:getFractureTime() > partData.fractureTime then
+                    bodyPart:setFractureTime(partData.fractureTime);
+                    dirty = true;
+                end
+                if bodyPart:getWoundInfectionLevel() > partData.woundInfectionLevel then
+                    bodyPart:setWoundInfectionLevel(partData.woundInfectionLevel);
+                    dirty = true;
+                end
+            end
+        end
+
         setZombiesUseless(true);
 
-        if not self.noPause then
+        if dirty then
+            bodyDamage:calculateOverallHealth();
+        end
+
+        if self.tickDelay > 5 and not self.noPause then
             GameTime.getInstance():setMultiplier(0.0);
+        elseif isGamePaused() and not self.noPause then
+            GameTime.getInstance():setMultiplier(1.0);
         end
     end
 end
@@ -166,69 +235,19 @@ function ISBriefingUI:update()
         return;
     end
 
-    if not self.fadeStartTime and not self.isFinished then
-        if self.player:isOnFire() then
-            self.player:StopBurning();
-        end
+    if not self.isFinished then
+        self.tickDelay = self.tickDelay + 1;
+    end
 
-        if isClient() then
-            if not self.sentStartCommand then
-                self.networkTickDelay = (self.networkTickDelay or 0) + 1;
-                if self.player:getSquare() and self.player:getOnlineID() ~= -1 and self.networkTickDelay > 5 then
-                    sendClientCommand(self.player, "Briefing", "setBriefingActive", {
-                        active = true,
-                        parts = self.snapshotParts,
-                        infectionTime = self.snapshotInfectionTime,
-                        infectionMortalityDuration = self.snapshotInfectionMortalityDuration,
-                    });
-                    self.sentStartCommand = true;
-                end
-            end
-        else
-            local bodyDamage = self.player:getBodyDamage();
-            bodyDamage:setHealthReductionFromSevereBadMoodles(0);
-            bodyDamage:setStandardHealthAddition(0);
-
-            local dirty = false;
-
-            for i = 0, bodyDamage:getBodyParts():size() - 1 do
-                local bodyPart = bodyDamage:getBodyPart(BodyPartType.FromIndex(i));
-                local partData = self.snapshotParts[i + 1];
-                if partData then
-                    if bodyPart:getHealth() < partData.health then
-                        bodyPart:SetHealth(partData.health);
-                        dirty = true;
-                    end
-                    if bodyPart:getBurnTime() > partData.burnTime then
-                        bodyPart:setBurnTime(partData.burnTime);
-                        dirty = true;
-                    end
-                    if bodyPart:getBleedingTime() > partData.bleedingTime then
-                        bodyPart:setBleedingTime(partData.bleedingTime);
-                        dirty = true;
-                    end
-                    if bodyPart:getDeepWoundTime() > partData.deepWoundTime then
-                        bodyPart:setDeepWoundTime(partData.deepWoundTime);
-                        dirty = true;
-                    end
-                    if bodyPart:getFractureTime() > partData.fractureTime then
-                        bodyPart:setFractureTime(partData.fractureTime);
-                        dirty = true;
-                    end
-                    if bodyPart:getWoundInfectionLevel() > partData.woundInfectionLevel then
-                        bodyPart:setWoundInfectionLevel(partData.woundInfectionLevel);
-                        dirty = true;
-                    end
-                end
-            end
-
-            if dirty then
-                bodyDamage:calculateOverallHealth();
-            end
-
-            if not self.noPause then
-                GameTime.getInstance():setMultiplier(0.0);
-            end
+    if isClient() and (not self.fadeStartTime and not self.isFinished) and not self.sentStartCommand then
+        if self.player:getSquare() and self.player:getOnlineID() ~= -1 and self.tickDelay > 5 then
+            sendClientCommand(self.player, "Briefing", "setBriefingActive", {
+                active = true,
+                parts = self.snapshotParts,
+                infectionTime = self.snapshotInfectionTime,
+                infectionMortalityDuration = self.snapshotInfectionMortalityDuration,
+            });
+            self.sentStartCommand = true;
         end
     end
 
@@ -300,7 +319,7 @@ function ISBriefingUI:prerender()
     end
 end
 
-function ISBriefingUI:onMouseDown(x, y)
+function ISBriefingUI:onMouseDown()
     if not self.isFinished then
         if not self.joypadData and not self.noPause then
             self:skipAnimation();
@@ -310,7 +329,14 @@ function ISBriefingUI:onMouseDown(x, y)
     return false;
 end
 
-function ISBriefingUI:onRightMouseDown(x, y)
+function ISBriefingUI:onMouseWheel()
+    if not self.isFinished then
+        return true;
+    end
+    return false;
+end
+
+function ISBriefingUI:onRightMouseDown()
     if not self.isFinished then
         if not self.joypadData and not self.noPause then
             self:skipAnimation();
@@ -369,6 +395,10 @@ end
 function ISBriefingUI:restoreGame()
     if self.isFinished then return; end
     self.isFinished = true;
+
+    if ISMoodlesInLuaHandle then
+        ISMoodlesInLuaHandle:setVisible(true);
+    end
 
     local sm = getSoundManager();
     local emitter = getSoundManager():getUIEmitter();
@@ -435,6 +465,8 @@ function ISBriefingUI:restoreGame()
 
         setZombiesUseless(false);
     end
+
+    Events.OnTick.Remove(ISBriefingUI.onTick);
 
     if self.joypadData and not self.joypadData.controller.connected then
         local ui = _originalJoypadDisconnectedUI(ISJoypadDisconnectedUI, self.player:getPlayerNum());
@@ -549,7 +581,9 @@ function ISBriefingUI:new(lines, noPause)
     o:setWantKeyEvents(true);
     o:setJoypadFocused(true);
     o:setCapture(true);
+    o:setVisible(true);
 
+    o.tickDelay = 0;
     o.noPause = noPause;
     o.holdDuration = 1.0;
     o.fadeOutDuration = 1.0;
@@ -591,6 +625,8 @@ function ISBriefingUI:new(lines, noPause)
     o.oldMusicVol = sm:getMusicVolume();
 
     o.player = getPlayer();
+
+    ISBriefingUI.instance = o;
 
     o:initialise();
     return o;

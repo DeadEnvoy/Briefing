@@ -79,10 +79,6 @@ function ISBriefingManager:show()
         if getGameSpeed() ~= 1 then setGameSpeed(1); end
     end
 
-    if not isClient() and not noPause then
-        GameTime.getInstance():setMultiplier(0.0);
-    end
-
     local data = { name = nil, date = nil, location = nil, days = nil };
     local startDay = getSandboxOptions():getOptionByName("StartDay"):getValue();
     local startMonth = getSandboxOptions():getOptionByName("StartMonth"):getValue();

@@ -58,3 +58,10 @@ link1 = Workshop = https://steamcommunity.com/id/acrynos/myworkshopfiles/?appid=
 
 Note: The "%s" display issue and string formatting problem are not something I can fix on my end — this needs to be addressed by the TIS developers.
 [ ------ ]
+
+[ 2.0.2 ]
+- Added compatibility with Moodles in Lua.
+- Added handling for cases where the game forcibly resumed time when zombies were nearby.
+- Added a delay to properly initialize all game resources.
+- Added mouse wheel handling during active briefing.
+[ ------ ]
