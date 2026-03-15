@@ -65,3 +65,8 @@ Note: The "%s" display issue and string formatting problem are not something I c
 - Added a delay to properly initialize all game resources.
 - Added mouse wheel handling during active briefing.
 [ ------ ]
+
+[ 2.0.3 ]
+- Added compatibility with Moodle Framework.
+- Sound handling is now correct, with smoother volume restoration.
+[ ------ ]
