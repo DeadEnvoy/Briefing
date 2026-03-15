@@ -95,6 +95,16 @@ function ISBriefingUI:initialise()
         ISMoodlesInLuaHandle:setVisible(false);
     end
 
+    if MF and MF.MoodlesStorage then
+        for _, playerMoodles in pairs(MF.MoodlesStorage) do
+            for _, moodle in pairs(playerMoodles) do
+                if moodle.setVisible then
+                    moodle:setVisible(false);
+                end
+            end
+        end
+    end
+
     self.isVolumeFadingOut = true;
     self.volumeFadeStartTime = getTimestampMs();
 
@@ -166,7 +176,10 @@ end
 
 function ISBriefingUI.onTick()
     local self = ISBriefingUI.instance;
-    if not self or self.isFinished then return; end
+
+    self:updateVolumeFade();
+
+    if self.isFinished then return; end
     
     if self.player:isOnFire() then
         self.player:StopBurning();
@@ -226,9 +239,7 @@ end
 
 function ISBriefingUI:update()
     ISPanel.update(self);
-
     self:updateCursor();
-    self:updateVolumeFade();
 
     if self.player:isDead() and not self.fadeStartTime then
         self:skipAnimation();
@@ -281,8 +292,8 @@ function ISBriefingUI:updateVolumeFade()
         local elapsed = (timestamp - self.volumeFadeStartTime) / 1000.0;
         local progress = math.min(1.0, elapsed / 1.0);
 
-        sm:setAmbientVolume(self.oldAmbientVol * (1.0 - progress));
         sm:setSoundVolume(self.oldSoundVol * (1.0 - progress));
+        sm:setAmbientVolume(self.oldAmbientVol * (1.0 - progress));
         sm:setMusicVolume(self.oldMusicVol * (1.0 - progress));
 
         if progress >= 1.0 then
@@ -292,13 +303,17 @@ function ISBriefingUI:updateVolumeFade()
         local elapsed = (timestamp - self.volumeFadeInStartTime) / 1000.0;
         local progress = math.min(1.0, elapsed / 1.0);
 
-        sm:setAmbientVolume(self.oldAmbientVol * progress);
         sm:setSoundVolume(self.oldSoundVol * progress);
+        sm:setAmbientVolume(self.oldAmbientVol * progress);
         sm:setMusicVolume(self.oldMusicVol * progress);
 
         if progress >= 1.0 then
             self.isVolumeFadingIn = false;
         end
+    elseif not self.isFinished then
+        sm:setSoundVolume(0.0);
+        sm:setAmbientVolume(0.0);
+        sm:setMusicVolume(0.0);
     end
 end
 
@@ -400,6 +415,16 @@ function ISBriefingUI:restoreGame()
         ISMoodlesInLuaHandle:setVisible(true);
     end
 
+    if MF and MF.MoodlesStorage then
+        for _, playerMoodles in pairs(MF.MoodlesStorage) do
+            for _, moodle in pairs(playerMoodles) do
+                if moodle.setVisible then
+                    moodle:setVisible(true);
+                end
+            end
+        end
+    end
+
     local sm = getSoundManager();
     local emitter = getSoundManager():getUIEmitter();
     if self.soundInstance then
@@ -407,9 +432,9 @@ function ISBriefingUI:restoreGame()
         self.soundInstance = nil;
     end
 
-    if self.oldAmbientVol then sm:setAmbientVolume(self.oldAmbientVol); end
-    if self.oldSoundVol then sm:setSoundVolume(self.oldSoundVol); end
-    if self.oldMusicVol then sm:setMusicVolume(self.oldMusicVol); end
+    sm:setSoundVolume(0.0);
+    sm:setAmbientVolume(0.0);
+    sm:setMusicVolume(0.0);
 
     self.isVolumeFadingIn = true;
     self.volumeFadeInStartTime = getTimestampMs();
@@ -465,8 +490,6 @@ function ISBriefingUI:restoreGame()
 
         setZombiesUseless(false);
     end
-
-    Events.OnTick.Remove(ISBriefingUI.onTick);
 
     if self.joypadData and not self.joypadData.controller.connected then
         local ui = _originalJoypadDisconnectedUI(ISJoypadDisconnectedUI, self.player:getPlayerNum());
@@ -525,6 +548,7 @@ function ISBriefingUI:removeFromUIManager()
         self:restoreGame();
     end
     ISPanel.removeFromUIManager(self);
+    Events.OnTick.Remove(ISBriefingUI.onTick);
 end
 
 function ISBriefingUI:updateFadeOut()
