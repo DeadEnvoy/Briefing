@@ -70,3 +70,10 @@ Note: The "%s" display issue and string formatting problem are not something I c
 - Added compatibility with Moodle Framework.
 - Sound handling is now correct, with smoother volume restoration.
 [ ------ ]
+
+[ 2.0.4 ]
+- The audio handling method has been changed.
+- Added compatibility with Broadcast Voicer & Vehicle Heater Sound System.
+- Fixed an issue where sound was not restored when "Pause game after briefing" was enabled.
+- Applied quadratic interpolation for sound fading.
+[ ------ ]

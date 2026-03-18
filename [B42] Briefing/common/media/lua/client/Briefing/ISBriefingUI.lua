@@ -33,9 +33,13 @@ local function utf8_len(s)
     while i <= #s do
         local byte = string.byte(s, i);
         local step = 1;
-        if byte >= 192 and byte <= 223 then step = 2;
-        elseif byte >= 224 and byte <= 239 then step = 3;
-        elseif byte >= 240 and byte <= 247 then step = 4; end
+        if byte >= 192 and byte <= 223 then
+            step = 2;
+        elseif byte >= 224 and byte <= 239 then
+            step = 3;
+        elseif byte >= 240 and byte <= 247 then
+            step = 4;
+        end
         i = i + step;
         len = len + 1;
     end
@@ -52,9 +56,13 @@ local function utf8_sub(s, start, num)
         if charIdx == start then startByte = i; end
         local byte = string.byte(s, i);
         local step = 1;
-        if byte >= 192 and byte <= 223 then step = 2;
-        elseif byte >= 224 and byte <= 239 then step = 3;
-        elseif byte >= 240 and byte <= 247 then step = 4; end
+        if byte >= 192 and byte <= 223 then
+            step = 2;
+        elseif byte >= 224 and byte <= 239 then
+            step = 3;
+        elseif byte >= 240 and byte <= 247 then
+            step = 4;
+        end
         if charIdx == start + num - 1 then
             endByte = i + step - 1;
             break;
@@ -106,7 +114,8 @@ function ISBriefingUI:initialise()
     end
 
     self.isVolumeFadingOut = true;
-    self.volumeFadeStartTime = getTimestampMs();
+
+    getCore():setOptionVehicleEngineVolume(0);
 
     self.player:setBlockMovement(true);
     self.player:setIgnoreMovement(true);
@@ -160,7 +169,10 @@ function ISBriefingUI:initialise()
         self.player:setShootable(false);
 
         self.oldVoiceMode = getCore():getOptionVoiceMode();
+        self.oldVoiceVol = getCore():getOptionVoiceVolumePlayers();
+
         getCore():setOptionVoiceMode(3);
+        getCore():setOptionVoiceVolumePlayers(0);
 
         if ISChat and ISChat.instance then
             self.wasChatVisible = ISChat.instance:isVisible();
@@ -170,8 +182,8 @@ function ISBriefingUI:initialise()
         setZombiesUseless(true);
         setVehicleStatic(true);
     end
-    
-    Events.OnTick.Add(ISBriefingUI.onTick);
+
+    Events.OnTickEvenPaused.Add(ISBriefingUI.onTick);
 end
 
 function ISBriefingUI.onTick()
@@ -180,7 +192,7 @@ function ISBriefingUI.onTick()
     self:updateVolumeFade();
 
     if self.isFinished then return; end
-    
+
     if self.player:isOnFire() then
         self.player:StopBurning();
     end
@@ -229,10 +241,12 @@ function ISBriefingUI.onTick()
             bodyDamage:calculateOverallHealth();
         end
 
+        if isGamePaused() then
+            setGameSpeed(1);
+        end
+
         if self.tickDelay > 5 and not self.noPause then
             GameTime.getInstance():setMultiplier(0.0);
-        elseif isGamePaused() and not self.noPause then
-            GameTime.getInstance():setMultiplier(1.0);
         end
     end
 end
@@ -246,7 +260,7 @@ function ISBriefingUI:update()
         return;
     end
 
-    if not self.isFinished then
+    if not self.isFinished and self.tickDelay < 60 then
         self.tickDelay = self.tickDelay + 1;
     end
 
@@ -284,37 +298,93 @@ function ISBriefingUI:update()
 end
 
 function ISBriefingUI:updateVolumeFade()
-    if not self.oldAmbientVol then return; end
     local sm = getSoundManager();
     local timestamp = getTimestampMs();
 
+    if self.typingFadeStartTime and self.soundInstance then
+        local elapsed = (timestamp - self.typingFadeStartTime) / 1000.0;
+        local progress = math.min(1.0, elapsed / 0.250);
+        local fade = 1.0 - progress; fade = fade * fade;
+
+        local emitter = sm:getUIEmitter();
+        emitter:setVolume(self.soundInstance, (self.oldSoundVol / 10) * fade);
+
+        if progress >= 1.0 then
+            emitter:stopSound(self.soundInstance);
+            self.soundInstance = nil;
+            self.typingFadeStartTime = nil;
+        end
+    end
+
     if self.isVolumeFadingOut then
+         if not self.volumeFadeStartTime then
+            self.volumeFadeStartTime = timestamp;
+        end
+
         local elapsed = (timestamp - self.volumeFadeStartTime) / 1000.0;
         local progress = math.min(1.0, elapsed / 1.0);
+        local fade = 1.0 - progress; fade = fade * fade;
 
-        sm:setSoundVolume(self.oldSoundVol * (1.0 - progress));
-        sm:setAmbientVolume(self.oldAmbientVol * (1.0 - progress));
-        sm:setMusicVolume(self.oldMusicVol * (1.0 - progress));
+        sm:setSoundVolume((self.oldSoundVol / 10) * fade);
+        sm:setMusicVolume((self.oldMusicVol / 10) * fade);
 
         if progress >= 1.0 then
+            getCore():setOptionSoundVolume(0);
+            getCore():setOptionMusicVolume(0);
+            
             self.isVolumeFadingOut = false;
         end
-    elseif self.isVolumeFadingIn then
-        local elapsed = (timestamp - self.volumeFadeInStartTime) / 1000.0;
-        local progress = math.min(1.0, elapsed / 1.0);
-
-        sm:setSoundVolume(self.oldSoundVol * progress);
-        sm:setAmbientVolume(self.oldAmbientVol * progress);
-        sm:setMusicVolume(self.oldMusicVol * progress);
-
-        if progress >= 1.0 then
-            self.isVolumeFadingIn = false;
-        end
     elseif not self.isFinished then
-        sm:setSoundVolume(0.0);
-        sm:setAmbientVolume(0.0);
-        sm:setMusicVolume(0.0);
+        if sm:getSoundVolume() ~= 0 then
+            sm:setSoundVolume(0);
+        end
+        if sm:getMusicVolume() ~= 0 then
+            sm:setMusicVolume(0);
+        end
+        if sm:getVehicleEngineVolume() ~= 0 then
+            sm:setVehicleEngineVolume(0);
+        end
+
+        if isClient() and getCore():getOptionVoiceMode() ~= 3 then
+            getCore():setOptionVoiceMode(3);
+        end
+        if isClient() and getCore():getOptionVoiceVolumePlayers() ~= 0 then
+            getCore():setOptionVoiceVolumePlayers(0);
+        end
     end
+end
+
+local RadioWavs = require("RadioCom/RadioWavs");
+if RadioWavs and RadioWavs.adjustSounds then
+    Events.OnTick.Remove(RadioWavs.adjustSounds);
+    local _originalRadioWavs_adjustSounds = RadioWavs.adjustSounds;
+    function RadioWavs.adjustSounds()
+        if BriefingAPI.isActive() then
+            if RadioWavs.soundCache then
+                for _, t in ipairs(RadioWavs.soundCache) do
+                    if t.sound and t.sound.setVolume then
+                        t.sound:setVolume(0);
+                    end
+                end
+            end
+            return;
+        end
+        _originalRadioWavs_adjustSounds();
+    end
+    Events.OnTick.Add(RadioWavs.adjustSounds);
+end
+
+require "MuffleSound";
+if _G._Muffle_OnPlayerUpdate then
+    Events.OnPlayerUpdate.Remove(_G._Muffle_OnPlayerUpdate);
+    local _original_onPlayerUpdate = _G._Muffle_OnPlayerUpdate;
+    function _G._Muffle_OnPlayerUpdate(player)
+        if BriefingAPI.isActive() then
+            return;
+        end
+        _original_onPlayerUpdate(player);
+    end
+    Events.OnPlayerUpdate.Add(_G._Muffle_OnPlayerUpdate);
 end
 
 function ISBriefingUI:prerender()
@@ -409,7 +479,6 @@ end
 
 function ISBriefingUI:restoreGame()
     if self.isFinished then return; end
-    self.isFinished = true;
 
     if ISMoodlesInLuaHandle then
         ISMoodlesInLuaHandle:setVisible(true);
@@ -426,19 +495,21 @@ function ISBriefingUI:restoreGame()
     end
 
     local sm = getSoundManager();
-    local emitter = getSoundManager():getUIEmitter();
+    local emitter = sm:getUIEmitter();
     if self.soundInstance then
         emitter:stopSound(self.soundInstance);
         self.soundInstance = nil;
     end
 
-    sm:setSoundVolume(0.0);
-    sm:setAmbientVolume(0.0);
-    sm:setMusicVolume(0.0);
-
-    self.isVolumeFadingIn = true;
-    self.volumeFadeInStartTime = getTimestampMs();
     self.isVolumeFadingOut = false;
+
+    getCore():setOptionSoundVolume(self.oldSoundVol);
+    getCore():setOptionMusicVolume(self.oldMusicVol);
+    getCore():setOptionVehicleEngineVolume(self.oldVehicleVol);
+
+    sm:setSoundVolume(self.oldSoundVol / 10);
+    sm:setMusicVolume(self.oldMusicVol / 10);
+    sm:setVehicleEngineVolume(self.oldVehicleVol / 10);
 
     self.player:setBlockMovement(false);
     self.player:setIgnoreMovement(false);
@@ -469,16 +540,18 @@ function ISBriefingUI:restoreGame()
             sendClientCommand(self.player, "Briefing", "setBriefingActive", { active = false });
         end
 
-        if self.oldVoiceMode then
-            getCore():setOptionVoiceMode(self.oldVoiceMode);
-            self.oldVoiceMode = nil;
-        end
+        getCore():setOptionVoiceMode(self.oldVoiceMode);
+        getCore():setOptionVoiceVolumePlayers(self.oldVoiceVol);
 
         if (ISChat and ISChat.instance) and self.wasChatVisible then
             ISChat.instance:setVisible(true);
         end
     else
-        GameTime.getInstance():setMultiplier(1.0);
+        if BriefingSettings.options:getOption("pauseOnEnd"):getValue() then
+            setGameSpeed(0);
+        else
+            setGameSpeed(1);
+        end
 
         local bodyDamage = self.player:getBodyDamage();
         bodyDamage:setHealthReductionFromSevereBadMoodles(0.0165);
@@ -499,6 +572,8 @@ function ISBriefingUI:restoreGame()
         self.joypadData.disconnectedUI = ui;
     end
 
+    self.isFinished = true;
+
     triggerEvent("OnBriefingEnd");
 end
 
@@ -516,7 +591,7 @@ function ISBriefingUI:updateTyping()
     if not self.typingStarted then
         local timestamp = getTimestampMs();
         local elapsed = (timestamp - self.startTime) / 1000.0;
-        if elapsed >= self.typingDelay then
+        if elapsed >= self.fadeInDuration then
             self.typingStarted = true;
         else
             return;
@@ -529,16 +604,12 @@ function ISBriefingUI:updateTyping()
             local emitter = getSoundManager():getUIEmitter();
             self.soundInstance = getSoundManager():playUISound("Typing_Sound");
             if self.soundInstance and self.soundInstance ~= 0 then
-                emitter:setVolume(self.soundInstance, self.oldSoundVol);
+                emitter:setVolume(self.soundInstance, self.oldSoundVol / 10);
             end
         end
     else
         self.isTypingComplete = true;
-        local emitter = getSoundManager():getUIEmitter();
-        if self.soundInstance then
-            emitter:stopSound(self.soundInstance);
-            self.soundInstance = nil;
-        end
+        self.typingFadeStartTime = getTimestampMs();
         self.holdStartTime = getTimestampMs();
     end
 end
@@ -547,8 +618,8 @@ function ISBriefingUI:removeFromUIManager()
     if not self.isFinished then
         self:restoreGame();
     end
+
     ISPanel.removeFromUIManager(self);
-    Events.OnTick.Remove(ISBriefingUI.onTick);
 end
 
 function ISBriefingUI:updateFadeOut()
@@ -558,7 +629,7 @@ function ISBriefingUI:updateFadeOut()
     local elapsed = (timestamp - self.fadeStartTime) / 1000.0;
     local progress = elapsed / self.fadeOutDuration;
 
-    self.alpha = math.max(0.0, 1.0 - progress);
+    self.alpha = math.max(0.0, self.fadeOutDuration - progress);
 
     if elapsed >= self.fadeOutDuration then
         self:removeFromUIManager();
@@ -611,9 +682,9 @@ function ISBriefingUI:new(lines, noPause)
     o.noPause = noPause;
     o.holdDuration = 1.0;
     o.fadeOutDuration = 1.0;
+    o.fadeInDuration = 1.0;
 
     o.typingStarted = false;
-    o.typingDelay = 1.0;
     o.currentCharIndex = 0;
     o.isTypingComplete = false;
 
@@ -639,14 +710,12 @@ function ISBriefingUI:new(lines, noPause)
     o.textBlockHeight = #o.lines * (o.fontHgt + 5) + 20;
     o.soundInstance = nil;
     o.isVolumeFadingOut = false;
-    o.isVolumeFadingIn = false;
-    o.volumeFadeStartTime = 0;
-    o.volumeFadeInStartTime = 0;
+    o.volumeFadeStartTime = nil;
+    o.typingFadeStartTime = nil;
 
-    local sm = getSoundManager();
-    o.oldAmbientVol = sm:getAmbientVolume();
-    o.oldSoundVol = sm:getSoundVolume();
-    o.oldMusicVol = sm:getMusicVolume();
+    o.oldSoundVol = getCore():getOptionSoundVolume();
+    o.oldMusicVol = getCore():getOptionMusicVolume();
+    o.oldVehicleVol = getCore():getOptionVehicleEngineVolume();
 
     o.player = getPlayer();
 

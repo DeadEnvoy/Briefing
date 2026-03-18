@@ -137,12 +137,3 @@ function ISBriefingManager.onGameStart()
 end
 
 Events.OnGameStart.Add(ISBriefingManager.onGameStart);
-
-function ISBriefingManager.onBriefingEnd()
-    if isClient() then return; end
-    if BriefingSettings.options:getOption("pauseOnEnd"):getValue() then
-        setGameSpeed(0);
-    end
-end
-
-Events.OnBriefingEnd.Add(ISBriefingManager.onBriefingEnd);
