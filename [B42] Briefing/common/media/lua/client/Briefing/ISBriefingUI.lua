@@ -89,13 +89,6 @@ local function setZombiesUseless(value)
     end
 end
 
-local function setVehicleStatic(value)
-    local vehicle = getPlayer():getVehicle();
-    if vehicle then
-        vehicle:setPhysicsActive(not value);
-    end
-end
-
 function ISBriefingUI:initialise()
     ISPanel.initialise(self);
 
@@ -180,7 +173,6 @@ function ISBriefingUI:initialise()
         end
     else
         setZombiesUseless(true);
-        setVehicleStatic(true);
     end
 
     Events.OnTickEvenPaused.Add(ISBriefingUI.onTick);
@@ -556,10 +548,6 @@ function ISBriefingUI:restoreGame()
         local bodyDamage = self.player:getBodyDamage();
         bodyDamage:setHealthReductionFromSevereBadMoodles(0.0165);
         bodyDamage:setStandardHealthAddition(0.002);
-
-        if not self.noPause then
-            setVehicleStatic(false);
-        end
 
         setZombiesUseless(false);
     end

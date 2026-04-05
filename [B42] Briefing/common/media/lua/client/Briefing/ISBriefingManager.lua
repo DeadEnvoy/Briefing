@@ -66,13 +66,11 @@ function ISBriefingManager:show()
     end
 
     local playerObj = getPlayer();
-    if not playerObj then return end
+    if not playerObj then return; end
 
     local noPause = false;
-    if SAPI and SAPI.Scenarios:getCurrent() ~= "Zomboid" then
-        if (SAPI.isNewGame() and (SAPI.Scenarios:getOptionValue("Climate.SnowAtStart") or not SAPI.Scenarios:getOptionValue("Briefing.Pause"))) then
-            noPause = true;
-        end
+    if (SAPI and SAPI.Scenarios:getCurrent() ~= "Zomboid") and not SAPI.Scenarios:getOptionValue("Briefing.Pause") then
+        noPause = true;
     end
 
     if not isClient() then
@@ -105,14 +103,14 @@ function ISBriefingManager:show()
         showDays = SAPI.Scenarios:getOptionValue("Briefing.Days");
     end
 
-    data.date = (dateFormat == 1) and strTime .. " - " .. strDate or year .. ", " .. strMonth .. " " .. day .. " - " .. strTime;
+    data.date = (dateFormat == 1) and (strTime .. " - " .. strDate) or (year .. ", " .. strMonth .. " " .. day .. " - " .. strTime);
 
     data.location = self:getLocationName(playerObj:getX(), playerObj:getY());
 
     if not showDays and consistent then
-        data.days = string.format(getText("UI_Briefing_DaysAfterOutbreak"), self:getDaysSinceOutbreak());
+        data.days = getText("UI_Briefing_DaysAfterOutbreak", self:getDaysSinceOutbreak());
     else
-        data.days = string.format(getText((getGameTime():getDaysSurvived() + 1) == 1 and "UI_Briefing_Day" or "UI_Briefing_Days"), getGameTime():getDaysSurvived() + 1);
+        data.days = getText("UI_Briefing_Day", getGameTime():getDaysSurvived() + 1);
     end
 
     local lines = { data.name, data.date, data.location, data.days };
@@ -123,17 +121,17 @@ function ISBriefingManager:show()
 end
 
 function ISBriefingManager.onGameStart()
-    if getCore():getGameMode() == "Tutorial" or getCore():isChallenge() then return end
+    if getCore():getGameMode() == "Tutorial" or getCore():isChallenge() then return; end
     
-    if not getActivatedMods():contains("Briefing") and (SAPI and SAPI.Scenarios:getCurrent() == "Zomboid") then return end
+    if not getActivatedMods():contains("Briefing") and (SAPI and SAPI.Scenarios:getCurrent() == "Zomboid") then return; end
 
-    if SAPI and SAPI.Scenarios:getCurrent() ~= "Zomboid" then
-        if not SAPI.Scenarios:getOptionValue("Briefing.Show") and not (SAPI.isNewGame() and SAPI.Scenarios:getOptionValue("Climate.SnowAtStart")) then
-            return;
-        end
+    if (SAPI and SAPI.Scenarios:getCurrent() ~= "Zomboid") and not SAPI.Scenarios:getOptionValue("Briefing.Show") then
+        return;
     end
 
-    ISBriefingManager:show();
+    if not BriefingAPI.isActive() then
+        ISBriefingManager:show();
+    end
 end
 
 Events.OnGameStart.Add(ISBriefingManager.onGameStart);
