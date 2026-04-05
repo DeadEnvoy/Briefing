@@ -2,9 +2,8 @@
     "UI_Time_AM": "AM",
     "UI_Time_PM": "PM",
 
-    "UI_Briefing_Day": "%s giorno",
-    "UI_Briefing_Days": "%s giorni",
-    "UI_Briefing_DaysAfterOutbreak": "%s giorni dopo l'epidemia",
+    "UI_Briefing_Day": "%1 giorno",
+    "UI_Briefing_DaysAfterOutbreak": "%1 giorni dopo l'epidemia",
 
     "UI_Briefing_Location_Riverside": "Riverside",
     "UI_Briefing_Location_Rosewood": "Rosewood",
@@ -27,5 +26,4 @@
 
     "UI_Briefing_KnoxCountry": "Contea di Knox",
     "UI_Briefing_Kentucky": "Kentucky, USA"
-
 }

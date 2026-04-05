@@ -2,9 +2,8 @@
     "UI_Time_AM": "AM",
     "UI_Time_PM": "PM",
 
-    "UI_Briefing_Day": "%s nap",
-    "UI_Briefing_Days": "%s nap",
-    "UI_Briefing_DaysAfterOutbreak": "%s nappal a kitörés után",
+    "UI_Briefing_Day": "%1 nap",
+    "UI_Briefing_DaysAfterOutbreak": "%1 nappal a kitörés után",
 
     "UI_Briefing_Location_Riverside": "Riverside",
     "UI_Briefing_Location_Rosewood": "Rosewood",
@@ -27,5 +26,4 @@
 
     "UI_Briefing_KnoxCountry": "Knox megye",
     "UI_Briefing_Kentucky": "Kentucky, USA"
-
 }

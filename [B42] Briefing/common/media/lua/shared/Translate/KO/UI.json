@@ -2,9 +2,8 @@
     "UI_Time_AM": "오전",
     "UI_Time_PM": "오후",
 
-    "UI_Briefing_Day": "%s일",
-    "UI_Briefing_Days": "%s일",
-    "UI_Briefing_DaysAfterOutbreak": "사태 발생 후 %s일",
+    "UI_Briefing_Day": "%1일",
+    "UI_Briefing_DaysAfterOutbreak": "사태 발생 후 %1일",
 
     "UI_Briefing_Location_Riverside": "리버사이드",
     "UI_Briefing_Location_Rosewood": "로즈우드",
@@ -27,5 +26,4 @@
 
     "UI_Briefing_KnoxCountry": "녹스 카운티",
     "UI_Briefing_Kentucky": "켄터키 주"
-
 }
