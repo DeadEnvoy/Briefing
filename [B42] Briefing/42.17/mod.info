@@ -7,5 +7,5 @@ icon=icon.png
 poster=poster.png
 versionMin=42.17.0
 modversion=2.0.6
-incompatible=PauseStart,Pause_on_Start,B42_Instant_Pause_on_Load,PAUSE_AFTER_LOAD_42_13,HoldOnB42
+incompatible=PauseStart,Pause_on_Start,B42_Instant_Pause_on_Load,PAUSE_AFTER_LOAD_42_13,HoldOnB42,SafeUserLogin
 tribute=https://web.tribute.tg/d/KU3
