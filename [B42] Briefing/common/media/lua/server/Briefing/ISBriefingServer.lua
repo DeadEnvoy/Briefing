@@ -1,5 +1,3 @@
-if not isServer() then return; end
-
 ISBriefingServer = {};
 
 local snapshots = {};
@@ -15,6 +13,26 @@ function ISBriefingServer.applySnapshot(player, args)
 
     snapshot.infectionTime = args.infectionTime;
     snapshot.infectionMortalityDuration = args.infectionMortalityDuration;
+
+    if args.stats and type(args.stats) == "table" then
+        snapshot.stats = args.stats;
+    end
+
+    if args.timeSinceLastSmoke ~= nil then
+        snapshot.timeSinceLastSmoke = args.timeSinceLastSmoke;
+    end
+
+    if args.catchACold ~= nil then
+        snapshot.catchACold = args.catchACold;
+    end
+
+    if args.nutrition and type(args.nutrition) == "table" then
+        snapshot.nutrition = args.nutrition;
+    end
+
+    if args.healthFromFoodTimer ~= nil then
+        snapshot.healthFromFoodTimer = args.healthFromFoodTimer;
+    end
 
     snapshots[player:getOnlineID()] = snapshot;
 end;
@@ -77,7 +95,7 @@ function ISBriefingServer.onTick()
 
                 snapshots[onlineID] = nil;
                 activePlayers[onlineID] = nil;
-                
+
                 player:getModData().isBriefingActive = nil;
                 player:transmitModData();
             else
@@ -99,13 +117,51 @@ function ISBriefingServer.onTick()
                     if dirty then
                         bodyDamage:calculateOverallHealth();
                     end
+
+                    if snapshot.stats then
+                        local stats = player:getStats();
+                        stats:set(CharacterStat.HUNGER, snapshot.stats.hunger);
+                        stats:set(CharacterStat.THIRST, snapshot.stats.thirst);
+                        stats:set(CharacterStat.FATIGUE, snapshot.stats.fatigue);
+                        stats:set(CharacterStat.ENDURANCE, snapshot.stats.endurance);
+                        stats:set(CharacterStat.BOREDOM, snapshot.stats.boredom);
+                        stats:set(CharacterStat.UNHAPPINESS, snapshot.stats.unhappiness);
+                        stats:set(CharacterStat.DISCOMFORT, snapshot.stats.discomfort);
+                        stats:set(CharacterStat.WETNESS, snapshot.stats.wetness);
+                        stats:set(CharacterStat.TEMPERATURE, snapshot.stats.temperature);
+                        stats:set(CharacterStat.SICKNESS, snapshot.stats.sickness);
+                        stats:set(CharacterStat.FOOD_SICKNESS, snapshot.stats.foodSickness);
+                        stats:set(CharacterStat.POISON, snapshot.stats.poison);
+                        stats:set(CharacterStat.NICOTINE_WITHDRAWAL, snapshot.stats.nicotineWithdrawal);
+                    end
+
+                    if snapshot.timeSinceLastSmoke ~= nil then
+                        player:setTimeSinceLastSmoke(snapshot.timeSinceLastSmoke);
+                    end
+
+                    if snapshot.nutrition then
+                        local nutrition = player:getNutrition();
+                        nutrition:setCarbohydrates(snapshot.nutrition.carbohydrates);
+                        nutrition:setLipids(snapshot.nutrition.lipids);
+                        nutrition:setProteins(snapshot.nutrition.proteins);
+                        nutrition:setCalories(snapshot.nutrition.calories);
+                    end
+
+                    if snapshot.catchACold ~= nil then
+                        bodyDamage:setCatchACold(snapshot.catchACold);
+                    end
+
+                    if snapshot.healthFromFoodTimer ~= nil then
+                        bodyDamage:setHealthFromFoodTimer(snapshot.healthFromFoodTimer);
+                    end
                 end
 
                 if player:isOnFire() then
                     player:StopBurning(); player:sendObjectChange(IsoObjectChange.STOP_BURNING);
                 end
             end
-        end); if not ok then
+        end);
+        if not ok then
             snapshots[onlineID] = nil;
             activePlayers[onlineID] = nil;
         end
@@ -145,7 +201,7 @@ function ISBriefingServer.restoreFlags(player, modData)
     ISBriefingServer.clearSnapshot(player);
 
     sendPlayerExtraInfo(player);
-    
+
     modData.isBriefingActive = nil;
 end;
 

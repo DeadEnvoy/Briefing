@@ -1,5 +1,3 @@
-if isServer() then return; end
-
 require "ISUI/ISPanel";
 require "JoyPad/JoyPadSetup";
 require "ISUI/ISBackButtonWheel";
@@ -110,26 +108,6 @@ function ISBriefingUI:initialise()
 
     getCore():setOptionVehicleEngineVolume(0);
 
-    self.player:setBlockMovement(true);
-    self.player:setIgnoreMovement(true);
-
-    GameKeyboard.setDoLuaKeyPressed(false);
-    GameKeyboard.noEventsWhileLoading = true;
-
-    JoypadState.disableControllerPrompt = true;
-    JoypadState.disableMovement = true;
-
-    ISBackButtonWheel.disablePlayerInfo = true;
-    ISBackButtonWheel.disableCrafting = true;
-    ISBackButtonWheel.disableTime = true;
-    ISBackButtonWheel.disableMoveable = true;
-
-    local joypadData = JoypadState.players[self.player:getPlayerNum() + 1];
-    if joypadData and joypadData.isActive then
-        self.joypadData = joypadData;
-        setJoypadFocus(self.player:getPlayerNum(), self);
-    end
-
     local bodyDamage = self.player:getBodyDamage();
     local count = bodyDamage:getBodyParts():size();
     local snapshotParts = {};
@@ -154,6 +132,36 @@ function ISBriefingUI:initialise()
     self.snapshotInfectionTime = bodyDamage:getInfectionTime();
     self.snapshotInfectionMortalityDuration = bodyDamage:getInfectionMortalityDuration();
 
+    local stats = self.player:getStats();
+    self.snapshotStats = {
+        hunger = stats:get(CharacterStat.HUNGER),
+        thirst = stats:get(CharacterStat.THIRST),
+        fatigue = stats:get(CharacterStat.FATIGUE),
+        endurance = stats:get(CharacterStat.ENDURANCE),
+        boredom = stats:get(CharacterStat.BOREDOM),
+        unhappiness = stats:get(CharacterStat.UNHAPPINESS),
+        discomfort = stats:get(CharacterStat.DISCOMFORT),
+        wetness = stats:get(CharacterStat.WETNESS),
+        temperature = stats:get(CharacterStat.TEMPERATURE),
+        sickness = stats:get(CharacterStat.SICKNESS),
+        foodSickness = stats:get(CharacterStat.FOOD_SICKNESS),
+        poison = stats:get(CharacterStat.POISON),
+        nicotineWithdrawal = stats:get(CharacterStat.NICOTINE_WITHDRAWAL),
+    };
+
+    self.snapshotTimeSinceLastSmoke = self.player:getTimeSinceLastSmoke();
+    self.snapshotCatchACold = bodyDamage:getCatchACold();
+
+    local nutrition = self.player:getNutrition();
+    self.snapshotNutrition = {
+        carbohydrates = nutrition:getCarbohydrates(),
+        lipids = nutrition:getLipids(),
+        proteins = nutrition:getProteins(),
+        calories = nutrition:getCalories(),
+    };
+
+    self.snapshotHealthFromFoodTimer = bodyDamage:getHealthFromFoodTimer();
+
     if isClient() then
         self.player:setInvisible(true);
         self.player:setGhostMode(true, true);
@@ -173,6 +181,50 @@ function ISBriefingUI:initialise()
         end
     else
         setZombiesUseless(true);
+    end
+
+    if self.player.setBlockMovement then
+        self.player:setBlockMovement(true);
+    end
+    if self.player.setIgnoreMovement then
+        self.player:setIgnoreMovement(true);
+    end
+
+    if GameKeyboard.setDoLuaKeyPressed then
+        GameKeyboard.setDoLuaKeyPressed(false);
+    end
+    if GameKeyboard.noEventsWhileLoading ~= nil then
+        GameKeyboard.noEventsWhileLoading = true;
+    end
+
+    if JoypadState then
+        if JoypadState.disableControllerPrompt ~= nil then
+            JoypadState.disableControllerPrompt = true;
+        end
+        if JoypadState.disableMovement ~= nil then
+            JoypadState.disableMovement = true;
+        end
+    end
+
+    if ISBackButtonWheel then
+        if ISBackButtonWheel.disablePlayerInfo ~= nil then
+            ISBackButtonWheel.disablePlayerInfo = true;
+        end
+        if ISBackButtonWheel.disableCrafting ~= nil then
+            ISBackButtonWheel.disableCrafting = true;
+        end
+        if ISBackButtonWheel.disableTime ~= nil then
+            ISBackButtonWheel.disableTime = true;
+        end
+        if ISBackButtonWheel.disableMoveable ~= nil then
+            ISBackButtonWheel.disableMoveable = true;
+        end
+    end
+
+    local joypadData = JoypadState.players[self.player:getPlayerNum() + 1];
+    if joypadData and joypadData.isActive then
+        self.joypadData = joypadData;
+        setJoypadFocus(self.player:getPlayerNum(), self);
     end
 
     Events.OnTickEvenPaused.Add(ISBriefingUI.onTick);
@@ -200,27 +252,27 @@ function ISBriefingUI.onTick()
             local bodyPart = bodyDamage:getBodyPart(BodyPartType.FromIndex(i));
             local partData = self.snapshotParts[i + 1];
             if partData then
-                if bodyPart:getHealth() < partData.health then
+                if bodyPart:getHealth() ~= partData.health then
                     bodyPart:SetHealth(partData.health);
                     dirty = true;
                 end
-                if bodyPart:getBurnTime() > partData.burnTime then
+                if bodyPart:getBurnTime() ~= partData.burnTime then
                     bodyPart:setBurnTime(partData.burnTime);
                     dirty = true;
                 end
-                if bodyPart:getBleedingTime() > partData.bleedingTime then
+                if bodyPart:getBleedingTime() ~= partData.bleedingTime then
                     bodyPart:setBleedingTime(partData.bleedingTime);
                     dirty = true;
                 end
-                if bodyPart:getDeepWoundTime() > partData.deepWoundTime then
+                if bodyPart:getDeepWoundTime() ~= partData.deepWoundTime then
                     bodyPart:setDeepWoundTime(partData.deepWoundTime);
                     dirty = true;
                 end
-                if bodyPart:getFractureTime() > partData.fractureTime then
+                if bodyPart:getFractureTime() ~= partData.fractureTime then
                     bodyPart:setFractureTime(partData.fractureTime);
                     dirty = true;
                 end
-                if bodyPart:getWoundInfectionLevel() > partData.woundInfectionLevel then
+                if bodyPart:getWoundInfectionLevel() ~= partData.woundInfectionLevel then
                     bodyPart:setWoundInfectionLevel(partData.woundInfectionLevel);
                     dirty = true;
                 end
@@ -233,6 +285,43 @@ function ISBriefingUI.onTick()
             bodyDamage:calculateOverallHealth();
         end
 
+        if self.snapshotStats then
+            local stats = self.player:getStats();
+            stats:set(CharacterStat.HUNGER, self.snapshotStats.hunger);
+            stats:set(CharacterStat.THIRST, self.snapshotStats.thirst);
+            stats:set(CharacterStat.FATIGUE, self.snapshotStats.fatigue);
+            stats:set(CharacterStat.ENDURANCE, self.snapshotStats.endurance);
+            stats:set(CharacterStat.BOREDOM, self.snapshotStats.boredom);
+            stats:set(CharacterStat.UNHAPPINESS, self.snapshotStats.unhappiness);
+            stats:set(CharacterStat.DISCOMFORT, self.snapshotStats.discomfort);
+            stats:set(CharacterStat.WETNESS, self.snapshotStats.wetness);
+            stats:set(CharacterStat.TEMPERATURE, self.snapshotStats.temperature);
+            stats:set(CharacterStat.SICKNESS, self.snapshotStats.sickness);
+            stats:set(CharacterStat.FOOD_SICKNESS, self.snapshotStats.foodSickness);
+            stats:set(CharacterStat.POISON, self.snapshotStats.poison);
+            stats:set(CharacterStat.NICOTINE_WITHDRAWAL, self.snapshotStats.nicotineWithdrawal);
+        end
+
+        if self.snapshotTimeSinceLastSmoke then
+            self.player:setTimeSinceLastSmoke(self.snapshotTimeSinceLastSmoke);
+        end
+
+        if self.snapshotNutrition then
+            local nutrition = self.player:getNutrition();
+            nutrition:setCarbohydrates(self.snapshotNutrition.carbohydrates);
+            nutrition:setLipids(self.snapshotNutrition.lipids);
+            nutrition:setProteins(self.snapshotNutrition.proteins);
+            nutrition:setCalories(self.snapshotNutrition.calories);
+        end
+
+        if self.snapshotCatchACold then
+            bodyDamage:setCatchACold(self.snapshotCatchACold);
+        end
+
+        if self.snapshotHealthFromFoodTimer then
+            bodyDamage:setHealthFromFoodTimer(self.snapshotHealthFromFoodTimer);
+        end
+        
         if isGamePaused() then
             setGameSpeed(1);
         end
@@ -263,6 +352,11 @@ function ISBriefingUI:update()
                 parts = self.snapshotParts,
                 infectionTime = self.snapshotInfectionTime,
                 infectionMortalityDuration = self.snapshotInfectionMortalityDuration,
+                stats = self.snapshotStats,
+                timeSinceLastSmoke = self.snapshotTimeSinceLastSmoke,
+                catchACold = self.snapshotCatchACold,
+                nutrition = self.snapshotNutrition,
+                healthFromFoodTimer = self.snapshotHealthFromFoodTimer,
             });
             self.sentStartCommand = true;
         end
@@ -398,7 +492,7 @@ end
 
 function ISBriefingUI:onMouseDown()
     if not self.isFinished then
-        if not self.joypadData and not self.noPause then
+        if (not self.joypadData and not self.noPause) and self.typingStarted then
             self:skipAnimation();
         end
         return true;
@@ -415,7 +509,7 @@ end
 
 function ISBriefingUI:onRightMouseDown()
     if not self.isFinished then
-        if not self.joypadData and not self.noPause then
+        if (not self.joypadData and not self.noPause) and self.typingStarted then
             self:skipAnimation();
         end
         return true;
@@ -426,7 +520,7 @@ end
 function ISBriefingUI:onKeyPress(key)
     if not self.isFinished then
         GameKeyboard.eatKeyPress(key);
-        if (not self.joypadData and not self.noPause) and key == Keyboard.KEY_ESCAPE then
+        if ((not self.joypadData and not self.noPause) and key == Keyboard.KEY_ESCAPE) and self.typingStarted then
             self:skipAnimation();
         end
         return true;
@@ -438,7 +532,7 @@ function ISBriefingUI:onJoypadDown(button, joypadData)
     local elapsed = (getTimestampMs() - self.startTime) / 1000.0;
     if elapsed < 1.75 then return true; end
     if not self.isFinished then
-        if not self.noPause and button == Joypad.AButton then
+        if (not self.noPause and button == Joypad.AButton) and self.typingStarted then
             self:skipAnimation();
         end
         return true;
@@ -503,19 +597,43 @@ function ISBriefingUI:restoreGame()
     sm:setMusicVolume(self.oldMusicVol / 10);
     sm:setVehicleEngineVolume(self.oldVehicleVol / 10);
 
-    self.player:setBlockMovement(false);
-    self.player:setIgnoreMovement(false);
+    if self.player.setBlockMovement then
+        self.player:setBlockMovement(false);
+    end
+    if self.player.setIgnoreMovement then
+        self.player:setIgnoreMovement(false);
+    end
 
-    GameKeyboard.setDoLuaKeyPressed(true);
-    GameKeyboard.noEventsWhileLoading = false;
+    if GameKeyboard.setDoLuaKeyPressed then
+        GameKeyboard.setDoLuaKeyPressed(true);
+    end
+    if GameKeyboard.noEventsWhileLoading ~= nil then
+        GameKeyboard.noEventsWhileLoading = false;
+    end
 
-    JoypadState.disableControllerPrompt = false;
-    JoypadState.disableMovement = false;
+    if JoypadState then
+        if JoypadState.disableControllerPrompt ~= nil then
+            JoypadState.disableControllerPrompt = false;
+        end
+        if JoypadState.disableMovement ~= nil then
+            JoypadState.disableMovement = false;
+        end
+    end
 
-    ISBackButtonWheel.disablePlayerInfo = false;
-    ISBackButtonWheel.disableCrafting = false;
-    ISBackButtonWheel.disableTime = false;
-    ISBackButtonWheel.disableMoveable = false;
+    if ISBackButtonWheel then
+        if ISBackButtonWheel.disablePlayerInfo ~= nil then
+            ISBackButtonWheel.disablePlayerInfo = false;
+        end
+        if ISBackButtonWheel.disableCrafting ~= nil then
+            ISBackButtonWheel.disableCrafting = false;
+        end
+        if ISBackButtonWheel.disableTime ~= nil then
+            ISBackButtonWheel.disableTime = false;
+        end
+        if ISBackButtonWheel.disableMoveable ~= nil then
+            ISBackButtonWheel.disableMoveable = false;
+        end
+    end
 
     if self.joypadData then
         setJoypadFocus(self.player:getPlayerNum(), nil);
@@ -539,7 +657,7 @@ function ISBriefingUI:restoreGame()
             ISChat.instance:setVisible(true);
         end
     else
-        if BriefingSettings.options:getOption("pauseOnEnd"):getValue() then
+        if BriefingSettings and BriefingSettings.options:getOption("pauseOnEnd"):getValue() then
             setGameSpeed(0);
         else
             setGameSpeed(1);
