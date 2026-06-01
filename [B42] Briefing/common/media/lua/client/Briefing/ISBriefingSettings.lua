@@ -1,13 +1,11 @@
-if isServer() then return; end
-
 require "PZAPI/ModOptions";
-require "ModManager/ModOptions/ModOptionsScreen";
+require "ModManager/PZAPI";
 
 BriefingSettings = {};
 BriefingSettings.options = PZAPI.ModOptions:create("Briefing", "Briefing");
 
 if BriefingSettings.options.addImage then
-    BriefingSettings.options:addImage("media/ui/ModManager/briefing_preview.png", true);
+    BriefingSettings.options:addImage("media/ui/ModManager/briefing_preview.png");
 end
 
 local dateFormat = BriefingSettings.options:addComboBox("dateTimeFormat", "Date & Time Format", "Choose the display format for date and time information.");

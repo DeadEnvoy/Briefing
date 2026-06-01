@@ -1,25 +1,23 @@
-if isServer() then return; end
-
 require "Scenarios/API";
 require "Briefing/ISBriefingAPI";
 
 ISBriefingManager = {};
 
 function ISBriefingManager:getLocationName(x, y)
-    local gameMode = SAPI and SAPI.Scenarios:getCurrent() or "Zomboid";
     local locations = require("Briefing/ISBriefingLocations");
-    for i = #locations, 1, -1 do
-        local location = locations[i]
-        if (location.mode == gameMode) and (x >= location.startX and x <= location.endX) and (y >= location.startY and y <= location.endY) then
-            return getText("UI_Briefing_Location_" .. location.id) .. ", " .. getText("UI_Briefing_KnoxCountry");
-        end
-    end
-    if SAPI and SAPI.Scenarios:getCurrent() ~= "Zomboid" then
+    if SAPI and SAPI.isScenario() then
+        local gameMode = SAPI.Scenarios:getCurrent()
         for i = #locations, 1, -1 do
             local location = locations[i]
-            if (location.mode == "Zomboid") and (x >= location.startX and x <= location.endX) and (y >= location.startY and y <= location.endY) then
+            if (location.mode == gameMode) and (x >= location.startX and x <= location.endX) and (y >= location.startY and y <= location.endY) then
                 return getText("UI_Briefing_Location_" .. location.id) .. ", " .. getText("UI_Briefing_KnoxCountry");
             end
+        end
+    end
+    for i = #locations, 1, -1 do
+        local location = locations[i]
+        if (location.mode == "Zomboid") and (x >= location.startX and x <= location.endX) and (y >= location.startY and y <= location.endY) then
+            return getText("UI_Briefing_Location_" .. location.id) .. ", " .. getText("UI_Briefing_KnoxCountry");
         end
     end
     return getText("UI_Briefing_KnoxCountry") .. ", " .. getText("UI_Briefing_Kentucky");
@@ -98,7 +96,7 @@ function ISBriefingManager:show()
     local showDays = BriefingSettings and BriefingSettings.options:getOption("enableDaysSurvived"):getValue() or false;
     local dateFormat = BriefingSettings and BriefingSettings.options:getOption("dateTimeFormat"):getValue() or 1;
 
-    if SAPI and SAPI.Scenarios:getCurrent() ~= "Zomboid" then
+    if SAPI and SAPI.isScenario() then
         ---@diagnostic disable-next-line: cast-local-type
         showDays = SAPI.Scenarios:getOptionValue("Briefing.Days");
     end
@@ -122,10 +120,8 @@ end
 
 function ISBriefingManager.onGameStart()
     if getCore():getGameMode() == "Tutorial" or getCore():isChallenge() then return; end
-    
-    if not getActivatedMods():contains("Briefing") and (SAPI and SAPI.Scenarios:getCurrent() == "Zomboid") then return; end
 
-    if (SAPI and SAPI.Scenarios:getCurrent() ~= "Zomboid") and not SAPI.Scenarios:getOptionValue("Briefing.Show") then
+    if (SAPI and SAPI.isScenario()) and not SAPI.Scenarios:getOptionValue("Briefing.Show") then
         return;
     end
 
