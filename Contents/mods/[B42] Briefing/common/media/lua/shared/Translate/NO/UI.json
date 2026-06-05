@@ -5,6 +5,10 @@
     "UI_Briefing_Day": "%1 dag",
     "UI_Briefing_DaysAfterOutbreak": "%1 dager etter utbruddet",
 
+    "UI_Briefing_Year_1_AfterOutbreak": "%1 år etter utbruddet",
+    "UI_Briefing_Year_2_AfterOutbreak": "%1 år etter utbruddet",
+    "UI_Briefing_Years_AfterOutbreak": "%1 år etter utbruddet",
+
     "UI_Briefing_Location_Riverside": "Riverside",
     "UI_Briefing_Location_Rosewood": "Rosewood",
     "UI_Briefing_Location_Muldraugh": "Muldraugh",

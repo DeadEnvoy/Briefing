@@ -5,6 +5,10 @@
     "UI_Briefing_Day": "%1일",
     "UI_Briefing_DaysAfterOutbreak": "사태 발생 후 %1일",
 
+    "UI_Briefing_Year_1_AfterOutbreak": "사태 발생 후 %1년",
+    "UI_Briefing_Year_2_AfterOutbreak": "사태 발생 후 %1년",
+    "UI_Briefing_Years_AfterOutbreak": "사태 발생 후 %1년",
+
     "UI_Briefing_Location_Riverside": "리버사이드",
     "UI_Briefing_Location_Rosewood": "로즈우드",
     "UI_Briefing_Location_Muldraugh": "멀드로",

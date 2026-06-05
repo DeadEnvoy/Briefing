@@ -26,6 +26,14 @@ function ISBriefingServer.applySnapshot(player, args)
         snapshot.catchACold = args.catchACold;
     end
 
+    if args.coldStrength ~= nil then
+        snapshot.coldStrength = args.coldStrength;
+    end
+
+    if args.coldDamageStage ~= nil then
+        snapshot.coldDamageStage = args.coldDamageStage;
+    end
+
     if args.nutrition and type(args.nutrition) == "table" then
         snapshot.nutrition = args.nutrition;
     end
@@ -66,6 +74,22 @@ function ISBriefingServer.restoreTimersFromSnapshot(player)
 
     bodyDamage:setInfectionTime(snapshot.infectionTime);
     bodyDamage:setInfectionMortalityDuration(snapshot.infectionMortalityDuration);
+
+    if snapshot.catchACold ~= nil then
+        bodyDamage:setCatchACold(snapshot.catchACold);
+    end
+
+    if snapshot.coldStrength ~= nil then
+        bodyDamage:setColdStrength(snapshot.coldStrength);
+    end
+
+    if snapshot.coldDamageStage ~= nil then
+        bodyDamage:setColdDamageStage(snapshot.coldDamageStage);
+    end
+
+    if snapshot.healthFromFoodTimer ~= nil then
+        bodyDamage:setHealthFromFoodTimer(snapshot.healthFromFoodTimer);
+    end
 
     bodyDamage:calculateOverallHealth();
 end;
@@ -149,6 +173,14 @@ function ISBriefingServer.onTick()
 
                     if snapshot.catchACold ~= nil then
                         bodyDamage:setCatchACold(snapshot.catchACold);
+                    end
+
+                    if snapshot.coldStrength ~= nil then
+                        bodyDamage:setColdStrength(snapshot.coldStrength);
+                    end
+
+                    if snapshot.coldDamageStage ~= nil then
+                        bodyDamage:setColdDamageStage(snapshot.coldDamageStage);
                     end
 
                     if snapshot.healthFromFoodTimer ~= nil then

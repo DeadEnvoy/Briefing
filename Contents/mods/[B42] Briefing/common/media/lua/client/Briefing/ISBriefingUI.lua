@@ -5,6 +5,85 @@ require "Briefing/ISBriefingAPI";
 
 ISBriefingUI = ISPanel:derive("ISBriefingUI");
 
+local function getLocationName(x, y)
+    local locations = require("Briefing/ISBriefingLocations");
+    if SAPI and SAPI.isScenario() then
+        local gameMode = SAPI.Scenarios:getCurrent()
+        for i = #locations, 1, -1 do
+            local location = locations[i]
+            if (location.mode == gameMode) and (x >= location.startX and x <= location.endX) and (y >= location.startY and y <= location.endY) then
+                return getText("UI_Briefing_Location_" .. location.id) .. ", " .. getText("UI_Briefing_KnoxCountry");
+            end
+        end
+    end
+    for i = #locations, 1, -1 do
+        local location = locations[i]
+        if (location.mode == "Zomboid") and (x >= location.startX and x <= location.endX) and (y >= location.startY and y <= location.endY) then
+            return getText("UI_Briefing_Location_" .. location.id) .. ", " .. getText("UI_Briefing_KnoxCountry");
+        end
+    end
+    return getText("UI_Briefing_KnoxCountry") .. ", " .. getText("UI_Briefing_Kentucky");
+end
+
+local function formatTime(time)
+    local h = math.floor(time);
+    local m = math.floor((time - h) * 60);
+    if getCore():getOptionClock24Hour() then
+        return string.format("%02d:%02d", h, m);
+    else
+        local ampm = getText("UI_Time_AM");
+        if h >= 12 then
+            ampm = getText("UI_Time_PM");
+            if h > 12 then
+                h = h - 12;
+            end
+        end
+        if h == 0 then
+            h = 12;
+        end
+        return string.format("%02d:%02d %s", h, m, ampm);
+    end
+end
+
+local function getDaysSinceOutbreak()
+    local gt = getGameTime()
+
+    local currentTimestamp = os.time{
+        year = gt:getYear(),
+        month = gt:getMonth() + 1,
+        day = gt:getDay() + 1,
+        hour = gt:getHour(),
+        min = gt:getMinutes(),
+        sec = 0
+    }
+
+    return math.floor(os.difftime(currentTimestamp, os.time{year=1993, month=7, day=4, hour=9, min=0, sec=0}) / 86400)
+end
+
+local function getTimeAfterOutbreakText(days)
+    if days < 365 then
+        return getText("UI_Briefing_DaysAfterOutbreak", days);
+    end
+
+    local years = math.floor(days / 365);
+    if getCore():getOptionLanguageName() == "RU" then
+        local lastTwoDigits = years % 100;
+        local lastDigit = years % 10;
+
+        if lastTwoDigits >= 11 and lastTwoDigits <= 14 then
+            return getText("UI_Briefing_Years_AfterOutbreak", years);
+        elseif lastDigit == 1 then
+            return getText("UI_Briefing_Year_1_AfterOutbreak", years);
+        elseif lastDigit >= 2 and lastDigit <= 4 then
+            return getText("UI_Briefing_Year_2_AfterOutbreak", years);
+        end
+    elseif years == 1 then
+        return getText("UI_Briefing_Year_1_AfterOutbreak", years);
+    end
+
+    return getText("UI_Briefing_Years_AfterOutbreak", years);
+end
+
 local _originalJoypadDisconnectedUI_new = ISJoypadDisconnectedUI.new;
 ISJoypadDisconnectedUI.new = function(self, playerNum)
     if BriefingAPI.isActive() then
@@ -151,6 +230,8 @@ function ISBriefingUI:initialise()
 
     self.snapshotTimeSinceLastSmoke = self.player:getTimeSinceLastSmoke();
     self.snapshotCatchACold = bodyDamage:getCatchACold();
+    self.snapshotColdStrength = bodyDamage:getColdStrength();
+    self.snapshotColdDamageStage = bodyDamage:getColdDamageStage();
 
     local nutrition = self.player:getNutrition();
     self.snapshotNutrition = {
@@ -302,7 +383,7 @@ function ISBriefingUI.onTick()
             stats:set(CharacterStat.NICOTINE_WITHDRAWAL, self.snapshotStats.nicotineWithdrawal);
         end
 
-        if self.snapshotTimeSinceLastSmoke then
+        if self.snapshotTimeSinceLastSmoke ~= nil then
             self.player:setTimeSinceLastSmoke(self.snapshotTimeSinceLastSmoke);
         end
 
@@ -314,11 +395,19 @@ function ISBriefingUI.onTick()
             nutrition:setCalories(self.snapshotNutrition.calories);
         end
 
-        if self.snapshotCatchACold then
+        if self.snapshotCatchACold ~= nil then
             bodyDamage:setCatchACold(self.snapshotCatchACold);
         end
 
-        if self.snapshotHealthFromFoodTimer then
+        if self.snapshotColdStrength ~= nil then
+            bodyDamage:setColdStrength(self.snapshotColdStrength);
+        end
+
+        if self.snapshotColdDamageStage ~= nil then
+            bodyDamage:setColdDamageStage(self.snapshotColdDamageStage);
+        end
+
+        if self.snapshotHealthFromFoodTimer ~= nil then
             bodyDamage:setHealthFromFoodTimer(self.snapshotHealthFromFoodTimer);
         end
         
@@ -355,6 +444,8 @@ function ISBriefingUI:update()
                 stats = self.snapshotStats,
                 timeSinceLastSmoke = self.snapshotTimeSinceLastSmoke,
                 catchACold = self.snapshotCatchACold,
+                coldStrength = self.snapshotColdStrength,
+                coldDamageStage = self.snapshotColdDamageStage,
                 nutrition = self.snapshotNutrition,
                 healthFromFoodTimer = self.snapshotHealthFromFoodTimer,
             });
@@ -479,7 +570,7 @@ function ISBriefingUI:prerender()
     self:drawRect(0, 0, self.width, self.height, alpha, 0, 0, 0);
 
     local y = self.height / 2 - self.textBlockHeight / 2;
-    for i, line in ipairs(self.lines) do
+    for i,_ in ipairs(self.lines) do
         local display = self:getDisplayText(i);
         if #display > 0 then
             local x = self.width / 2;
@@ -698,6 +789,52 @@ function ISBriefingUI:updateTyping()
         local timestamp = getTimestampMs();
         local elapsed = (timestamp - self.startTime) / 1000.0;
         if elapsed >= self.fadeInDuration then
+            local data = { name = self.player:getFullName(), date = nil, location = nil, days = nil };
+
+            local startDay = getSandboxOptions():getOptionByName("StartDay"):getValue();
+            local startMonth = getSandboxOptions():getOptionByName("StartMonth"):getValue();
+            local startYear = getSandboxOptions():getOptionByName("StartYear"):getValue() + 1992;
+            local timeSince = getSandboxOptions():getOptionByName("TimeSinceApo"):getValue() - 1;
+
+            local day = getGameTime():getDay() + 1;
+            local month = getGameTime():getMonth() + 1;
+            local year = getGameTime():getYear();
+
+            local startMonthsSinceOutbreak = (startYear - 1993) * 12 + (startMonth - 7);
+            local isAfterOutbreak = startYear > 1993 or (startYear == 1993 and (startMonth > 7 or (startMonth == 7 and startDay >= 4)));
+            local matchesTimeSince = (timeSince == 12 and startMonthsSinceOutbreak >= timeSince) or (timeSince ~= 12 and startMonthsSinceOutbreak == timeSince);
+
+            local strTime = formatTime(getGameTime():getTimeOfDay());
+            local strMonth = getText("Sandbox_StartMonth_option" .. month);
+            local strDate = strMonth .. " " .. day .. ", " .. year;
+
+            local showDays = BriefingSettings and BriefingSettings.options:getOption("enableDaysSurvived"):getValue() or false;
+            local dateFormat = BriefingSettings and BriefingSettings.options:getOption("dateTimeFormat"):getValue() or 1;
+
+            if SAPI and SAPI.isScenario() then
+                ---@diagnostic disable-next-line: cast-local-type
+                showDays = SAPI.Scenarios:getOptionValue("Briefing.Days");
+            end
+
+            data.date = (dateFormat == 1) and (strTime .. " - " .. strDate) or (year .. ", " .. strMonth .. " " .. day .. " - " .. strTime);
+
+            data.location = getLocationName(self.player:getX(), self.player:getY());
+
+            if not showDays and (isAfterOutbreak and matchesTimeSince) then
+                data.days = getTimeAfterOutbreakText(getDaysSinceOutbreak());
+            else
+                data.days = getText("UI_Briefing_Day", getGameTime():getDaysSurvived() + 1);
+            end
+
+            self.lines = { data.name, data.date, data.location, data.days };
+
+            local total = 0;
+            for _, line in ipairs(self.lines) do
+                total = total + utf8_len(line);
+            end
+            self.totalSymbols = total;
+            self.textBlockHeight = #self.lines * (self.fontHgt + 5) + 20;
+
             self.typingStarted = true;
         else
             return;
@@ -770,11 +907,32 @@ function ISBriefingUI:destroy()
     ISPanel.destroy(self);
 end
 
-function ISBriefingUI:new(lines, noPause)
+function ISBriefingUI:show()
+    if getCore():getGameMode() == "Tutorial" or getCore():isChallenge() then return; end
+
+    if (SAPI and SAPI.isScenario()) and not SAPI.Scenarios:getOptionValue("Briefing.Show") then
+        return;
+    end
+
+    if not getPlayer() or not getPlayer():isAlive() or getPlayer():isAsleep() then
+        return;
+    end
+
+    if BriefingAPI.isActive() then
+        return;
+    end
+
+    local ui = ISBriefingUI:new();
+    ui:addToUIManager();
+
+    triggerEvent("OnBriefingStart");
+end
+
+function ISBriefingUI:new()
     local o = ISPanel:new(0, 0, getCore():getScreenWidth(), getCore():getScreenHeight());
     setmetatable(o, self);
     self.__index = self;
-    o.lines = lines or {};
+    o.lines = {};
     o:noBackground();
     o.borderColor = { r = 0, g = 0, b = 0, a = 0 };
 
@@ -784,8 +942,12 @@ function ISBriefingUI:new(lines, noPause)
     o:setCapture(true);
     o:setVisible(true);
 
+    o.noPause = false;
+    if (SAPI and SAPI.Scenarios:getCurrent() ~= "Zomboid") and not SAPI.Scenarios:getOptionValue("Briefing.Pause") then
+        o.noPause = true;
+    end
+
     o.tickDelay = 0;
-    o.noPause = noPause;
     o.holdDuration = 1.0;
     o.fadeOutDuration = 1.0;
     o.fadeInDuration = 1.0;
@@ -807,13 +969,9 @@ function ISBriefingUI:new(lines, noPause)
 
     o.font = UIFont.Large;
     o.fontHgt = getTextManager():getFontHeight(o.font);
+    o.totalSymbols = 0;
+    o.textBlockHeight = 20;
 
-    local total = 0;
-    for _, line in ipairs(o.lines) do
-        total = total + utf8_len(line);
-    end
-    o.totalSymbols = total;
-    o.textBlockHeight = #o.lines * (o.fontHgt + 5) + 20;
     o.soundInstance = nil;
     o.isVolumeFadingOut = false;
     o.volumeFadeStartTime = nil;
@@ -830,3 +988,5 @@ function ISBriefingUI:new(lines, noPause)
     o:initialise();
     return o;
 end
+
+Events.OnGameStart.Add(ISBriefingUI.show);

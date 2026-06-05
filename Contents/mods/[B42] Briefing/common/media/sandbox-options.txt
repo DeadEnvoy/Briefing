@@ -1,0 +1,8 @@
+VERSION = 1,
+
+option StartYear
+{
+    type = enum, numValues = 100, default = 1,
+    page = TimeOptions,
+    translation = StartYear,
+}

@@ -5,6 +5,10 @@
     "UI_Briefing_Day": "%1-й день",
     "UI_Briefing_DaysAfterOutbreak": "%1-й день после вспышки",
 
+    "UI_Briefing_Year_1_AfterOutbreak": "%1 год после вспышки",
+    "UI_Briefing_Year_2_AfterOutbreak": "%1 года после вспышки",
+    "UI_Briefing_Years_AfterOutbreak": "%1 лет после вспышки",
+
     "UI_Briefing_Location_Riverside": "Риверсайд",
     "UI_Briefing_Location_Rosewood": "Роузвуд",
     "UI_Briefing_Location_Muldraugh": "Малдро",

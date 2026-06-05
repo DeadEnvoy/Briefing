@@ -1,5 +1,12 @@
-# 2.0.6
+# 2.1.0
+**UI**
+- Added years elapsed display for when more than 365 days have passed since the outbreak.
+
+**FIXES**
+- Fixed a bug where the new world start date was showing default GameTime values instead of the actual date.
+
 **TECHNICAL**
+- Adjusted how elapsed days are calculated.
 - Expanded the set of recoverable player states.
 - The briefing screen can no longer be skipped until text starts printing.
 - Player key and movement locks were moved to the end of the function and given proper safety checks.

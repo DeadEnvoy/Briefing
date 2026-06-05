@@ -3,7 +3,7 @@ require "Briefing/ISBriefingLocations";
 BriefingAPI = {};
 
 function BriefingAPI.isActive()
-    return ISBriefingManager and ISBriefingManager.ui ~= nil and not ISBriefingManager.ui.isFinished;
+    return ISBriefingUI and ISBriefingUI.instance ~= nil and not ISBriefingUI.instance.isFinished;
 end
 
 BriefingAPI.Locations = {};
