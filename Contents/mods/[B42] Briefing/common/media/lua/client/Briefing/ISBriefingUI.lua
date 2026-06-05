@@ -583,7 +583,7 @@ end
 
 function ISBriefingUI:onMouseDown()
     if not self.isFinished then
-        if (not self.joypadData and not self.noPause) and self.typingStarted then
+        if self.typingStarted and not self.noPause then
             self:skipAnimation();
         end
         return true;
@@ -600,7 +600,7 @@ end
 
 function ISBriefingUI:onRightMouseDown()
     if not self.isFinished then
-        if (not self.joypadData and not self.noPause) and self.typingStarted then
+        if self.typingStarted and not self.noPause then
             self:skipAnimation();
         end
         return true;
@@ -611,7 +611,7 @@ end
 function ISBriefingUI:onKeyPress(key)
     if not self.isFinished then
         GameKeyboard.eatKeyPress(key);
-        if ((not self.joypadData and not self.noPause) and key == Keyboard.KEY_ESCAPE) and self.typingStarted then
+        if key == Keyboard.KEY_ESCAPE and (self.typingStarted and not self.noPause) then
             self:skipAnimation();
         end
         return true;
@@ -623,7 +623,7 @@ function ISBriefingUI:onJoypadDown(button, joypadData)
     local elapsed = (getTimestampMs() - self.startTime) / 1000.0;
     if elapsed < 1.75 then return true; end
     if not self.isFinished then
-        if (not self.noPause and button == Joypad.AButton) and self.typingStarted then
+        if button == Joypad.AButton and (self.typingStarted and not self.noPause) then
             self:skipAnimation();
         end
         return true;
@@ -943,7 +943,7 @@ function ISBriefingUI:new()
     o:setVisible(true);
 
     o.noPause = false;
-    if (SAPI and SAPI.Scenarios:getCurrent() ~= "Zomboid") and not SAPI.Scenarios:getOptionValue("Briefing.Pause") then
+    if (SAPI and SAPI.isScenario()) and not SAPI.Scenarios:getOptionValue("Briefing.Pause") then
         o.noPause = true;
     end
 
